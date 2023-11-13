@@ -1,1 +1,17 @@
-<p>navbar works!</p>
+<nav class="navbar navbar-expand-md navbar-dark bg-dark px-3 mb-3">
+    <div class="container-fluid">
+
+        <button class="navbar-toggler" type="button" (click)="toggleCollapsed()">&#9776;</button>
+
+        <div [ngbCollapse]="isMenuCollapsed()" class="collapse navbar-collapse">
+            <ul class="navbar-nav">
+                @for (route of routes(); track $index) {
+                    <li class="nav-item">
+                        <a class="nav-link" [routerLink]="route.path" routerLinkActive="active"
+                            (click)="isMenuCollapsed.set(true)">{{route.data!['label']}}</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</nav>

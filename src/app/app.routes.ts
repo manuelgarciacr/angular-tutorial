@@ -3,18 +3,20 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
     {
         path: "home",
-        loadComponent: () => // Lazy load component
+        loadComponent: () =>
+            // Lazy load component
             import("./home").then(c => c.HomeComponent),
+        data: { label: "Home" },
     },
     {
         path: "login",
-        loadComponent: () =>
-            import("./account").then(c => c.LoginComponent),
+        loadComponent: () => import("./account").then(c => c.LoginComponent),
+        data: { label: "Login" },
     },
     {
         path: "register",
-        loadComponent: () =>
-            import("./account").then(c => c.RegisterComponent),
+        loadComponent: () => import("./account").then(c => c.RegisterComponent),
+        data: { label: "Register" }
     },
 
     // otherwise redirect to home or error page
