@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from "@angular/core";
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
-import { ActivatedRoute, Router } from "@angular/router";
+import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from "@angular/router";
 import { AccountService } from "@domain";
 import { first } from "rxjs";
 
@@ -9,7 +9,7 @@ import { first } from "rxjs";
     //   duplicate internal IDs in components that appear duplicated.
     selector: "login-component",
     standalone: true,
-    imports: [ReactiveFormsModule],
+    imports: [ReactiveFormsModule, RouterLink],
     templateUrl: "./login.component.html",
     styleUrl: "./login.component.scss",
 })
@@ -22,6 +22,7 @@ export class LoginComponent implements OnInit {
     protected loading = false;
     protected submitted = false;
     protected error?: string;
+    protected success?: string;
 
     constructor() {
         // redirect to home if already logged in
@@ -35,6 +36,11 @@ export class LoginComponent implements OnInit {
             username: ["", Validators.required],
             password: ["", Validators.required],
         });
+
+        // show success message after registration
+        if (this.route.snapshot.queryParams["registered"]) {
+            this.success = "Registration successful";
+        }
     }
 
     onSubmit() {
@@ -42,6 +48,7 @@ export class LoginComponent implements OnInit {
 
         // reset alert on submit
         this.error = "";
+        this.success = "";
 
         // stop here if form is invalid
         if (this.fg.invalid) {
@@ -51,10 +58,7 @@ export class LoginComponent implements OnInit {
         this.loading = true;
 
         this.accountService
-            .login(
-                this.fg.get("username")!.value,
-                this.fg.get("password")!.value
-            )
+            .login(this.getVal("username"), this.getVal("password"))
             .pipe(first())
             .subscribe({
                 next: () => {
@@ -72,4 +76,7 @@ export class LoginComponent implements OnInit {
                 },
             });
     }
+
+    // convenience getter for easy access to form values
+    getVal = (ctrlName: string) => this.fg.get(ctrlName)!.value;
 }

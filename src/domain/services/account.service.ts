@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { LoggedUser } from '@domain';
+import { IUser, LoggedUser } from '@domain';
 import { environment } from "@environments";
 import { BehaviorSubject, map } from 'rxjs';
 
@@ -59,6 +59,10 @@ export class AccountService {
         localStorage.removeItem("user");
         if (this._userSubject) this._userSubject.next(null);
         this.router.navigate(["login"]);
+    }
+
+    register(user: IUser) {
+        return this.http.post(`${environment.apiUrl}/users/register`, user);
     }
 }
 
