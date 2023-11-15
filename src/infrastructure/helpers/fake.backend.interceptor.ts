@@ -1,176 +1,157 @@
-import { Injectable, Provider } from "@angular/core";
 import {
     HttpRequest,
     HttpResponse,
-    HttpHandler,
-    HttpEvent,
-    HttpInterceptor,
-    HTTP_INTERCEPTORS,
+    HttpHandlerFn,
 } from "@angular/common/http";
-import { Observable, of, throwError } from "rxjs";
+import { of, throwError } from "rxjs";
 import { delay, materialize, dematerialize } from "rxjs/operators";
 import { BasicUser, IUser, LoggedUser } from "@domain";
 
 const usersKey = "angular-tutorial-users";
-const users: IUser[] = JSON.parse(localStorage.getItem(usersKey)!);
-// const users: IUser[] = [
-//     {
-//         id: 1,
-//         firstName: "Jason",
-//         lastName: "Watmore",
-//         username: "test",
-//         password: "test",
-//     }
-// ];
+const users: IUser[] = JSON.parse(localStorage.getItem(usersKey)!) || [];
 
-@Injectable()
-export class FakeBackendInterceptor implements HttpInterceptor {
+export function fakeBackendInterceptor<T>(request: HttpRequest<T>,
+        next: HttpHandlerFn) {
+    const { url, method, headers, body } = request;
 
-    intercept(
-        request: HttpRequest<IUser>,
-        next: HttpHandler
-    ): Observable<HttpEvent<IUser>> {
-        const { url, method, headers, body } = request;
+    return handleRoute();
 
-        return handleRoute();
+    function handleRoute() {
 
-        function handleRoute() {
-
-            switch (true) {
-                case url.endsWith("/users/authenticate") && method === "POST":
-                    return authenticate();
-                case url.endsWith("/users/register") && method === "POST":
-                    return register();
-                case url.endsWith("/users") && method === "GET":
-                    return getUsers();
-                case url.match(/\/users\/\d+$/) && method === "GET":
-                    return getUserById();
-                case url.match(/\/users\/\d+$/) && method === "PUT":
-                    return updateUser();
-                case url.match(/\/users\/\d+$/) && method === "DELETE":
-                    return deleteUser();
-                default:
-                    // pass through any requests not handled above
-                    return next.handle(request);
-            }
+        switch (true) {
+            case url.endsWith("/users/authenticate") && method === "POST":
+                return authenticate();
+            case url.endsWith("/users/register") && method === "POST":
+                return register();
+            case url.endsWith("/users") && method === "GET":
+                return getUsers();
+            case url.match(/\/users\/\d+$/) && method === "GET":
+                return getUserById();
+            case url.match(/\/users\/\d+$/) && method === "PUT":
+                return updateUser();
+            case url.match(/\/users\/\d+$/) && method === "DELETE":
+                return deleteUser();
+            default:
+                // pass through any requests not handled above
+                return next(request);
         }
+    }
 
-        // route functions
+    // route functions
 
-        function authenticate() {
-            const { username, password } = body as Partial<IUser> ;
-            const user = users.find(
-                v => v.username === username && v.password === password
-            );
+    function authenticate() {
+        const { username, password } = body as Partial<IUser> ;
+        const user = users.find(
+            v => v.username === username && v.password === password
+        );
 
-            if (!user) return error("Username or password is incorrect");
+        if (!user) return error("Username or password is incorrect");
 
-            return ok(
-                { ...user as BasicUser, token: "fake-jwt-token" }
+        return ok(
+            { ...user as BasicUser, token: "fake-jwt-token" }
+        );
+    }
+
+    function register() {
+        const user = body as Partial<IUser>;
+
+        if (users.find(v => v.username === user.username)) {
+            return error(
+                'Username "' + user.username + '" is already taken'
             );
         }
 
-        function register() {
-            const user = body as Partial<IUser>;
+        user.id = users.length ? Math.max(...users.map(v => v.id)) + 1 : 1;
+        users.push(user as IUser);
+        localStorage.setItem(usersKey, JSON.stringify(users));
 
-            if (users.find(v => v.username === user.username)) {
-                return error(
-                    'Username "' + user.username + '" is already taken'
-                );
-            }
+        return ok();
+    }
 
-            user.id = users.length ? Math.max(...users.map(v => v.id)) + 1 : 1;
-            users.push(user as IUser);
-            localStorage.setItem(usersKey, JSON.stringify(users));
+    function getUsers() {
 
-            return ok();
+        if (!isLoggedIn()) return unauthorized();
+
+        return ok(users.map(v => v as BasicUser));
+    }
+
+    function getUserById() {
+
+        if (!isLoggedIn()) return unauthorized();
+
+        const user = users.find(v => v.id === idFromUrl());
+
+        return ok(user as BasicUser);
+    }
+
+    function updateUser() {
+
+        if (!isLoggedIn()) return unauthorized();
+
+        const params = body as Partial<IUser>;
+        const user = users.find(v => v.id === idFromUrl());
+
+        // only update password if entered
+        if (!params.password) {
+            delete params.password;
         }
 
-        function getUsers() {
+        // update and save user
+        Object.assign(user!, params);
+        localStorage.setItem(usersKey, JSON.stringify(users));
 
-            if (!isLoggedIn()) return unauthorized();
+        return ok();
+    }
 
-            return ok(users.map(v => v as BasicUser));
-        }
+    function deleteUser() {
 
-        function getUserById() {
+        if (!isLoggedIn()) return unauthorized();
 
-            if (!isLoggedIn()) return unauthorized();
+        users.splice(users.findIndex(v => v.id === idFromUrl()), 1);
+        localStorage.setItem(usersKey, JSON.stringify(users));
 
-            const user = users.find(v => v.id === idFromUrl());
+        return ok();
+    }
 
-            return ok(user as BasicUser);
-        }
+    // helper functions
 
-        function updateUser() {
+    function ok(body?: LoggedUser | BasicUser | BasicUser[]) {
+        // delay observable to simulate server api call
+        return of(new HttpResponse({ status: 200, body })).pipe(delay(500));
+    }
 
-            if (!isLoggedIn()) return unauthorized();
+    function error(message: string) {
 
-            const params = body as Partial<IUser>;
-            const user = users.find(v => v.id === idFromUrl());
+        return throwError(() => ({ error: { message } })).pipe(
+            materialize(),
+            delay(500),
+            dematerialize(),
+        ); // call materialize and dematerialize to ensure delay even if an error is thrown (https://github.com/Reactive-Extensions/RxJS/issues/648);
+    }
 
-            // only update password if entered
-            if (!params.password) {
-                delete params.password;
-            }
+    function unauthorized() {
 
-            // update and save user
-            Object.assign(user!, params);
-            localStorage.setItem(usersKey, JSON.stringify(users));
+        return throwError(() => ({
+            status: 401,
+            error: { message: "Unauthorized" },
+        })).pipe(materialize(), delay(500), dematerialize());
+    }
 
-            return ok();
-        }
+    function isLoggedIn() {
 
-        function deleteUser() {
+        return headers.get("Authorization") === "Bearer fake-jwt-token";
+    }
 
-            if (!isLoggedIn()) return unauthorized();
+    function idFromUrl() {
+        const id = url.split("/").pop();
 
-            users.splice(users.findIndex(v => v.id === idFromUrl()), 1);
-            localStorage.setItem(usersKey, JSON.stringify(users));
-
-            return ok();
-        }
-
-        // helper functions
-
-        function ok(body?: LoggedUser | BasicUser | BasicUser[]) {
-            // delay observable to simulate server api call
-            return of(new HttpResponse({ status: 200, body })).pipe(delay(500));
-        }
-
-        function error(message: string) {
-
-            return throwError(() => ({ error: { message } })).pipe(
-                materialize(),
-                delay(500),
-                dematerialize(),
-            ); // call materialize and dematerialize to ensure delay even if an error is thrown (https://github.com/Reactive-Extensions/RxJS/issues/648);
-        }
-
-        function unauthorized() {
-
-            return throwError(() => ({
-                status: 401,
-                error: { message: "Unauthorized" },
-            })).pipe(materialize(), delay(500), dematerialize());
-        }
-
-        function isLoggedIn() {
-
-            return headers.get("Authorization") === "Bearer fake-jwt-token";
-        }
-
-        function idFromUrl() {
-            const id = url.split("/").pop();
-
-            return parseInt(id!);
-        }
+        return parseInt(id!);
     }
 }
 
-export const fakeBackendProvider: Provider = {
-    // use fake backend in place of Http service for backend-less development
-    provide: HTTP_INTERCEPTORS,
-    useClass: FakeBackendInterceptor,
-    multi: true,
-};
+// export const fakeBackendProvider: Provider = {
+//     // use fake backend in place of Http service for backend-less development
+//     provide: HTTP_INTERCEPTORS,
+//     useClass: FakeBackendInterceptor,
+//     multi: true,
+// };
