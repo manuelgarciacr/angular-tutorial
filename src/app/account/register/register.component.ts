@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { NgIf } from "@angular/common";
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AccountService } from '@domain';
+import { AccountService, AlertService } from '@domain';
 import { first } from 'rxjs';
 
 @Component({
@@ -19,10 +19,10 @@ export class RegisterComponent implements OnInit {
     private route = inject(ActivatedRoute);
     private router = inject(Router);
     private accountService = inject(AccountService);
+    private alertService = inject(AlertService);
     protected fg!: FormGroup;
     protected loading = false;
     protected submitted = false;
-    protected error?: string;
 
     constructor() {
         // redirect to home if already logged in
@@ -44,7 +44,7 @@ export class RegisterComponent implements OnInit {
         this.submitted = true;
 
         // reset alert on submit
-        this.error = "";
+        this.alertService.clear();
 
         // stop here if form is invalid
         if (this.fg.invalid) {
@@ -58,12 +58,13 @@ export class RegisterComponent implements OnInit {
             .pipe(first())
             .subscribe({
                 next: () => {
+                    this.alertService.success("Registration successful", true);
                     this.router.navigate(["/login"], {
                         queryParams: { registered: true },
                     });
                 },
                 error: error => {
-                    this.error = error;
+                    this.alertService.error(error);
                     this.loading = false;
                 },
                 complete() {

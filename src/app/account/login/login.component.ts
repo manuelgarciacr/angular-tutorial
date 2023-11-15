@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from "@angular/core";
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from "@angular/router";
-import { AccountService } from "@domain";
+import { AccountService, AlertService } from "@domain";
 import { first } from "rxjs";
 
 @Component({
@@ -18,11 +18,10 @@ export class LoginComponent implements OnInit {
     private route = inject(ActivatedRoute);
     private router = inject(Router);
     private accountService = inject(AccountService);
+    private alertService = inject(AlertService);
     protected fg!: FormGroup;
     protected loading = false;
     protected submitted = false;
-    protected error?: string;
-    protected success?: string;
 
     constructor() {
         // redirect to home if already logged in
@@ -37,18 +36,13 @@ export class LoginComponent implements OnInit {
             password: ["", Validators.required],
         });
 
-        // show success message after registration
-        if (this.route.snapshot.queryParams["registered"]) {
-            this.success = "Registration successful";
-        }
     }
 
     onSubmit() {
         this.submitted = true;
 
         // reset alert on submit
-        this.error = "";
-        this.success = "";
+        this.alertService.clear();
 
         // stop here if form is invalid
         if (this.fg.invalid) {
@@ -68,7 +62,7 @@ export class LoginComponent implements OnInit {
                     this.router.navigateByUrl(returnUrl);
                 },
                 error: error => {
-                    this.error = error;
+                    this.alertService.error(error);
                     this.loading = false;
                 },
                 complete() {
