@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from "@angular/core";
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
-import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from "@angular/router";
+import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { AccountService, AlertService } from "@domain";
 import { first } from "rxjs";
 

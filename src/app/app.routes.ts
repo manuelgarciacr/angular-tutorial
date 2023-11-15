@@ -11,6 +11,12 @@ export const routes: Routes = [
         canActivate: [authGuard],
     },
     {
+        path: "users",
+        loadChildren: () => import("@app").then(c => c.usersRoutes),
+        data: { label: "Users" },
+        canActivate: [authGuard],
+    },
+    {
         path: "login",
         loadComponent: () => import("@app").then(c => c.LoginComponent),
         data: { label: "Login" },
@@ -20,6 +26,7 @@ export const routes: Routes = [
         loadComponent: () => import("@app").then(c => c.RegisterComponent),
         data: { label: "Register" },
     },
+
     // otherwise redirect to home or error page
     { path: "", redirectTo: "/home", pathMatch: "full" },
     {

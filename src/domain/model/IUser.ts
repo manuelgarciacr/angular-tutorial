@@ -6,4 +6,6 @@ export interface IUser {
     password: string;
 }
 
-export type LoggedUser = Omit<IUser, "password"> & { token: string };
+export type BasicUser = Omit<IUser, "password">;
+
+export type LoggedUser = BasicUser & { token: string };

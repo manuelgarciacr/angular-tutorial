@@ -1,0 +1,70 @@
+<div class="p-4">
+    <div class="container">
+        <h1>{{title}}</h1>
+        @if (!loading) {
+            <form [formGroup]="fg" (ngSubmit)="onSubmit()">
+                <div class="row">
+                    <div class="mb-3 col">
+                        <label class="form-label">First Name</label>
+                        <input type="text" formControlName="firstName" class="form-control"
+                            [class]="{ 'is-invalid': submitted && fg.get('username')!.errors }" />
+                        @if (submitted && fg.get('firstName')!.errors?.["required"]) {
+                            <div class="invalid-feedback">
+                                First Name is required
+                            </div>
+                        }
+                    </div>
+                    <div class="mb-3 col">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" formControlName="lastName" class="form-control"
+                            [class]="{ 'is-invalid': submitted && fg.get('lastName')!.errors }" />
+                        @if (submitted && fg.get('lastName')!.errors?.["required"]) {
+                            <div class="invalid-feedback">
+                                Last Name is required
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="mb-3 col">
+                        <label class="form-label">Username</label>
+                        <input type="text" formControlName="username" class="form-control"
+                            [class]="{ 'is-invalid': submitted && fg.get('username')!.errors }" />
+                        @if (submitted && fg.get('username')!.errors?.["required"]) {
+                            <div class="invalid-feedback">
+                                Username is required
+                            </div>
+                        }
+                    </div>
+                    <div class="mb-3 col">
+                        <label class="form-label">
+                            Password
+                            <em *ngIf="id">(Leave blank to keep the same password)</em>
+                        </label>
+                        <input type="password" formControlName="password" class="form-control"
+                            [class]="{ 'is-invalid': submitted && fg.get('password')!.errors }" />
+                        @if (submitted && fg.get('password')!.errors) {
+                            <div class="invalid-feedback">
+                                <!-- Sometimes inline structural directives ( ngIf, ngFor, etc.) are useful -->
+                                <div *ngIf="fg.get('password')!.errors?.['required']">Password is required</div>
+                                <div *ngIf="fg.get('password')!.errors?.['minlength']">Password must be at least 6 characters</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <button [disabled]="submitting" class="btn btn-primary" style="min-width: 5rem">
+                        <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+                        Save
+                    </button>
+                    <button class="btn btn-danger ms-3" style="min-width: 5rem" [routerLink]="'/users'">Cancel</button>
+                    <!-- <a class="btn btn-link" [routerLink]="'/users'">Cancel</a> -->
+                </div>
+            </form>
+        } @else {
+            <div class="text-center m-5">
+                <span class="spinner-border spinner-border-lg align-center"></span>
+            </div>
+        }
+    </div>
+</div>
