@@ -11,6 +11,9 @@
                             (click)="isMenuCollapsed.set(true)">{{route.data!['label']}}</a>
                     </li>
                 }
+                <li class="nav-item" role="button">
+                    <a class="nav-link" (click)="this.logout.emit()">Logout</a>
+                </li>
             </ul>
         </div>
     </div>

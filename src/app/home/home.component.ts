@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import {  } from '@angular/common';
 
 @Component({
     // Router pages don't need selector, but angular 17 shows a warning. Generates

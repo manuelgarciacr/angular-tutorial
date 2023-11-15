@@ -6,15 +6,6 @@
         "types": [
             "@angular/localize"
         ],
-        "paths": {
-            "@app/*": [
-                "src/app/*"
-            ],
-            "@environments/*": [
-                "src/environments/*"
-            ]
-        },
-        "noPropertyAccessFromIndexSignature": false
     },
     "files": [
         "src/main.ts"

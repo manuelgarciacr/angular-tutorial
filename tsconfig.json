@@ -6,7 +6,6 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
@@ -22,7 +21,23 @@
     "lib": [
       "ES2022",
       "dom"
-    ]
+    ],
+    "baseUrl": "./src", // Needed for paths
+    "paths": {
+        "@app": [
+            "app/index.ts"
+        ],
+        "@domain": [
+            "domain/index.ts"
+        ],
+        "@infrastructure": [
+            "infrastructure/index.ts"
+        ],
+        "@environments": [
+            "environments/environment.ts"
+        ]
+    },
+    "noPropertyAccessFromIndexSignature": true
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

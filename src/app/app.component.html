@@ -1,4 +1,7 @@
-<navbar-component></navbar-component>
+@if (user) {
+    <navbar-component (logout)="accountService.logout()"></navbar-component>
+}
+
 <div class="container">
     <router-outlet></router-outlet>
 </div>

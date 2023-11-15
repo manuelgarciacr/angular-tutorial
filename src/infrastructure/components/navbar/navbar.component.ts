@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Output, inject, signal } from '@angular/core';
 import {  } from '@angular/common';
 import {
     RouterLink,
@@ -16,6 +16,7 @@ import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
     styleUrl: "./navbar.component.scss",
 })
 export class NavbarComponent {
+    @Output() logout = new EventEmitter<void>();
     private router = signal(inject(Router));
     private getRoutes = () =>
         this.router().config.filter(path => path.data?.["label"] != undefined);

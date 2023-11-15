@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 @Component({
-    // Router pages do not need selector
+    /// Router pages don't need selector, but angular 17 shows a warning. Generates
+    //   duplicate internal IDs in components that appear duplicated.
+    selector: "e404-component",
     standalone: true,
-    imports: [CommonModule],
     templateUrl: "./e404.component.html",
     styleUrl: "./e404.component.scss",
 })
