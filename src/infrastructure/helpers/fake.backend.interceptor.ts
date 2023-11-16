@@ -13,7 +13,7 @@ const users: IUser[] = JSON.parse(localStorage.getItem(usersKey)!) || [];
 export function fakeBackendInterceptor<T>(request: HttpRequest<T>,
         next: HttpHandlerFn) {
     const { url, method, headers, body } = request;
-
+console.log("FAKE", url, method, headers, body)
     return handleRoute();
 
     function handleRoute() {
@@ -85,11 +85,11 @@ export function fakeBackendInterceptor<T>(request: HttpRequest<T>,
     }
 
     function updateUser() {
-
         if (!isLoggedIn()) return unauthorized();
 
         const params = body as Partial<IUser>;
         const user = users.find(v => v.id === idFromUrl());
+console.log("UU", params, user);
 
         // only update password if entered
         if (!params.password) {
@@ -98,6 +98,7 @@ export function fakeBackendInterceptor<T>(request: HttpRequest<T>,
 
         // update and save user
         Object.assign(user!, params);
+console.log("UU2", user);
         localStorage.setItem(usersKey, JSON.stringify(users));
 
         return ok();

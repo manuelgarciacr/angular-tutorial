@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { errorInterceptor, fakeBackendInterceptor, jwtInterceptor } from '@infrastructure';
+import { HttpAdapter, errorInterceptor, fakeBackendInterceptor, jwtInterceptor } from '@infrastructure';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 export const appConfig: ApplicationConfig = {
@@ -23,5 +23,6 @@ export const appConfig: ApplicationConfig = {
                 // fakeBackendInterceptor,
             ])
         ),
+        HttpAdapter
     ],
 };

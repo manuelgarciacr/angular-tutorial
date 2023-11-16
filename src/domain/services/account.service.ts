@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { BasicUser, IUser, LoggedUser } from '@domain';
 import { environment } from "@environments";
+import { UsersRepoService } from '@infrastructure';
 import { BehaviorSubject, map, tap } from 'rxjs';
 
 const httpOptions = {
@@ -22,6 +23,7 @@ const httpOptions = {
     providedIn: "root",
 })
 export class AccountService {
+    private repo = inject(UsersRepoService);
     private router = inject(Router);
     private http = inject(HttpClient);
     private _userSubject = new BehaviorSubject(
@@ -69,34 +71,39 @@ export class AccountService {
 
     getAll() {
 
-        return this.http.get<BasicUser[]>(`${environment.apiUrl}/users`);
+        //return this.http.get<BasicUser[]>(`${environment.apiUrl}/users`);
+        return this.repo.getUsers("");
     }
 
     getById(id: string) {
 
-        return this.http.get<BasicUser>(`${environment.apiUrl}/users/${id}`);
+        //return this.http.get<BasicUser>(`${environment.apiUrl}/users/${id}`);
+        return this.repo.getOneUser(id);
     }
 
-    update(id: number, params: Partial<IUser>) {
+    update(id: number, newUser: Partial<IUser>) {
 
-        return this.http.put(`${environment.apiUrl}/users/${id}`, params).pipe(
+console.log("UDE", id, `/users/${id}`)
+        //return this.http.put(`${environment.apiUrl}/users/${id}`, newUser).pipe(
+        return this.repo.put(id.toString(), newUser).pipe(
             tap(() => {
                 // update stored user if the logged in user updated their own record
                 if (id == this.userValue?.id) {
                     // update local storage
-                    const user = { ...this.userValue, ...params };
+                    const user = { ...this.userValue, ...newUser };
                     localStorage.setItem("user", JSON.stringify(user));
 
                     // publish updated user to subscribers
                     this._userSubject.next(user);
                 }
-             })
+            })
         );
     }
 
     delete(id: number) {
 
-        return this.http.delete(`${environment.apiUrl}/users/${id}`).pipe(
+        //return this.http.delete(`${environment.apiUrl}/users/${id}`).pipe(
+        return this.repo.delete(id.toString()).pipe(
             tap(() => {
                 // auto logout if the logged in user deleted their own record
                 if (id == this.userValue?.id) {
